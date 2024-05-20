@@ -1,14 +1,17 @@
-﻿using InsiteTeamTask.Models;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using InsiteTeamTask.API.Models;
+using InsiteTeamTask.Models;
 
 namespace InsiteTeamTask.Services
 {
     public interface IDataService
     {
-        List<Attendance> GetAttendance();
+		IEnumerable<Attendance> GetAttendance();
 
-        List<Attendance> GetAttendanceForGame(int seasonId, int gameNumber);
+		IEnumerable<Attendance> GetAttendanceForGame(int? seasonId, int? gameId);
 
-        List<Attendance> GetAttendanceForProduct(string productCode);
-    }
+		IEnumerable<Attendance> GetAttendanceForProduct(string productCode);
+
+        IEnumerable<SeasonGames> GetSeasonsWithGames();
+	}
 }

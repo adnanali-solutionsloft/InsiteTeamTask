@@ -1,1 +1,82 @@
-<h1>Attendance</h1>
+<!-- top bar -->
+<mat-toolbar color="primary">Attendance</mat-toolbar>
+
+<div class="container mt-3">
+  <h5 class="mb-3">Filtering Attendance</h5>
+  <!-- filters -->
+  <mat-radio-group aria-label="Select an option" [formControl]="searchBy" (change)="onChangeSearchType()">
+    <mat-radio-button value="1">Product Code</mat-radio-button>
+    <mat-radio-button value="2">Season And Game</mat-radio-button>
+  </mat-radio-group>
+
+  <div class="filter-container">
+    <!-- product code filter -->
+    <mat-form-field appearance="fill" *ngIf="searchBy.value == '1'">
+      <mat-label>Product Code</mat-label>
+      <input matInput [formControl]="productCode" [maxlength]="10">
+    </mat-form-field>
+    <!-- season filter -->
+    <mat-form-field appearance="fill" *ngIf="searchBy.value == '2'">
+      <mat-label>Season</mat-label>
+      <mat-select placeholder="Select Season" [formControl]="seasonId"
+        (selectionChange)="onSeasonSelectionChange($event)">
+        <ng-container *ngIf="seasonGamesData$ | async as data; else loading">
+          <mat-option *ngFor="let opt of data" [value]="opt.id">
+            {{opt.name}}
+          </mat-option>
+        </ng-container>
+        <ng-template #loading>Loading...</ng-template>
+      </mat-select>
+    </mat-form-field>
+    <!-- game filter -->
+    <mat-form-field appearance="fill" *ngIf="searchBy.value == '2'">
+      <mat-label>Game</mat-label>
+      <mat-select placeholder="Select Game" [formControl]="gameId">
+        <ng-container *ngIf="gamesData$ | async as data; else loading">
+          <mat-option *ngFor="let opt of data" [value]="opt.id">
+            {{opt.description}}
+          </mat-option>
+        </ng-container>
+        <ng-template #loading>Loading...</ng-template>
+      </mat-select>
+    </mat-form-field>
+  </div>
+  <!-- table -->
+  <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8">
+
+    <!-- attendanceType column -->
+    <ng-container matColumnDef="attendanceType">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by attendance type">
+        Attendance Type
+      </th>
+      <td mat-cell *matCellDef="let element">
+        {{ mapAttendanceTypeToString(element.attendanceType) }}
+      </td>
+    </ng-container>
+
+    <!-- memberId column -->
+    <ng-container matColumnDef="memberId">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by member"> Member ID </th>
+      <td mat-cell *matCellDef="let element"> {{element.memberId == 0 ? "Not a Member" : element.memberId}} </td>
+    </ng-container>
+
+    <!-- barcode Cclumn -->
+    <ng-container matColumnDef="barcode">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by barcode"> Barcode </th>
+      <td mat-cell *matCellDef="let element"> {{element.barcode == "" ? "---" : element.barcode}} </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+
+  </table>
+
+  <!-- when data source is empty -->
+  <ng-container *ngIf="dataSource.data.length == 0">
+    <h6 class="m-3">No records found</h6>
+  </ng-container>
+
+  <!-- pagination -->
+  <mat-paginator [pageSizeOptions]="[10, 20]" showFirstLastButtons [hidden]="dataSource.data.length == 0">
+  </mat-paginator>
+</div>

@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
+using InsiteTeamTask.Data.Providers;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+using InsiteTeamTask.Services;
 
 namespace InsiteTeamTask
 {
@@ -17,7 +19,23 @@ namespace InsiteTeamTask
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services
+            services.AddTransient<IDataService, DataService>();
+            services.AddTransient<IDataProvider, DataProvider>();
+
+			var allowedOrigins = Configuration.GetSection("AllowedOrigins").Get<string[]>();
+
+			services.AddCors(options =>
+            {
+                options.AddDefaultPolicy(builder =>
+                {
+                    builder.WithOrigins(allowedOrigins)
+                           .AllowAnyHeader()
+                           .AllowAnyMethod()
+                           .AllowCredentials();
+                });
+            });
+
+			services
                 .AddMvc()
                 .SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
         }
@@ -33,8 +51,10 @@ namespace InsiteTeamTask
                 app.UseHsts();
             }
 
-            app.UseHttpsRedirection();
-            app.UseMvc();
+            app.UseCors();
+			app.UseMiddleware<ApiKeyMiddleware>();
+			app.UseHttpsRedirection();
+			app.UseMvc();
         }
     }
 }
